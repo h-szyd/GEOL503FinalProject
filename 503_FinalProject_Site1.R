@@ -1,17 +1,23 @@
-# Final Project - Seepage velocity maps for Alder Creek
+# Final Project - Seepage velocity maps for Alder Creek Site 1
 # Hanna Szydlowski
 # GEOL 503 Spring 2024
 # 02/28/24
 
 ## Objective: Create 3 seepage velocity maps for Site 1 at Alder Creek (located in
-#  Ontario, Canada). Maps will be: mini piezometer seepage velocities calculated using K
-#  values from past literature (map 1), mini piezometer seepage velocities
-#  using K values from field temperature readings (map 2), and SBPVP seepage
-#  velocity (map).
+#  Ontario, Canada). Maps will be: mini piezometer seepage velocities calculated
+#  using K values from past literature (map 1), mini piezometer seepage
+#  velocities using K values from field temperature readings (map 2), and SBPVP
+#  seepage velocity (map 3).
 
 # Map 1 - Mini Piezometer seepage velocity using K from literature
 # Map 2 - Mini Piezometer seepage velocity using K from UW temperature data
 # Map 3 - SBPVP seepage velocity
+
+## Lines of code that need to be commented in/out depending on map
+#  lines 33-38 (data files)
+#  lines 66-67 (K values) 
+#  lines 147-148 (for map 3 only - location coordinates to make mini piez)
+#  lines 199-200 (for map 3 only - min and max values for x and y axes)
 
 #----------
 ## Set working directory
@@ -25,9 +31,9 @@ setwd("C:/Users/hszyd/Documents/KU Research/UW_Work/Alder_Creek/503FinalProject"
 #  Determine which files to use based on the comment to the right
 
 SVData <- read.csv(file = "MiniPiezData_Site1.csv")                # map 1 & 2
-KvaluesUW <- read.csv(file = "MiniPiez_KvaluesUW_Site1.csv")       # map 2
+#KvaluesUW <- read.csv(file = "MiniPiez_KvaluesUW_Site1.csv")       # map 2
 #SVData <- read.csv(file = "SBPVP_SVmday_Site1.csv")                # map 3
-#colnames(SVData)[2] <- c("AVG_SV_mday")                            # map 3
+#colnames(SVData)[2] <- c("AVG_SV_mday")                                    # map 3
 LocationCoord <- read.csv(file = "James_Site1_MiniPiez_Coord.csv") # map 1 & 2
 #LocationCoord <- read.csv(file = "James_Site1_SBPVP_Coord.csv")    # map 3
 
@@ -57,8 +63,8 @@ library(latticeExtra)
 #  Note: Step 1 only needs to be done for maps 1 and 2!
 
 # define hydraulic conductivity (K) and porosity (n)
-#K <- 7.4e-2  # cm/sec from literature
-K <- KvaluesUW$K_cmsec # cm/sec from UW temperature data
+K <- 7.4e-2  # cm/sec from literature
+#K <- KvaluesUW$K_cmsec # cm/sec from UW temperature data
 n <- 0.3
 
 # Convert na characters to NA numeric
@@ -110,7 +116,8 @@ SVData$AVG_SV_mday <- rowMeans(SVData[, c(20,21,22)], na.rm = TRUE)
 
 # plot the x/y points to view orientation
 # first using Lat/Long
-plot(LocationCoord$Lat..N., LocationCoord$Long..W., xlim = rev(range(LocationCoord$Lat..N)),
+plot(LocationCoord$Lat..N., LocationCoord$Long..W.,
+     xlim = rev(range(LocationCoord$Lat..N)),
      xlab = "Latitude", ylab = "Longitude") # north pointing left
 
 # Give a spatial extent going from lat/long to UTM
@@ -135,6 +142,13 @@ LocationCoord_UTM_SV_wNA
 
 # Change the coordinate system to be in local meter scale coordinates
 # do this by subtracting the minimum values from easting and northing
+
+#----FOR MAP 3 ONLY----#
+LocationCoord_UTM_SV_wNA$x <- LocationCoord_UTM_SV_wNA$Easting_m - 538340.7
+LocationCoord_UTM_SV_wNA$y <- LocationCoord_UTM_SV_wNA$Northing_m - 4799406
+#----------------------#
+
+# DO NOT RUN LINES 152-155 FOR MAP 3
 LocationCoord_UTM_SV_wNA$x <- LocationCoord_UTM_SV_wNA$Easting_m - 
   min(LocationCoord_UTM_SV_wNA$Easting_m)
 LocationCoord_UTM_SV_wNA$y <- LocationCoord_UTM_SV_wNA$Northing_m - 
@@ -148,12 +162,10 @@ plot(LocationCoord_UTM_SV_wNA$Easting_m, LocationCoord_UTM_SV_wNA$Northing_m,
 
 # remove all NA values from the seepage velocity (SV_mday) if there are any
 LocationCoord_UTM_SV <- LocationCoord_UTM_SV_wNA[- which(is.na(LocationCoord_UTM_SV_wNA$SV_mday)),]
-#----------
+
+#-------------------------------------------------------------------------------
 
 # Mess around with plotting to see distribution before interpolation if desired
-
-# range of x (Northing) 4799406 to 4799492
-# range of y (Easting) 538340.7 to 538373.8
 
 # use ggplot to plot the velocities indicated by size and color
 ggplot(
@@ -180,13 +192,15 @@ ggplot(
 ## Step 3: Interpolate the data to get seepage velocities over the entire stream
 #          reach
 
-# Change the coordinate system to be in local meter scale coordinates
-# do this by subtracting the minimum values from easting and northing
-# LocationCoord_UTM_SV$x <- LocationCoord_UTM_SV$Easting_m - min(LocationCoord_UTM_SV$Easting_m)
-# LocationCoord_UTM_SV$y <- LocationCoord_UTM_SV$Northing_m - min(LocationCoord_UTM_SV$Northing_m)
-
 # Create the interpolation grid
 # Manually set ranges and make expanded grid based on min and max values
+
+#-----FOR MAP 3 ONLY----#
+x.range <- as.integer(c(-5, 38))
+y.range <- as.integer(c(-5, 90))
+#-----------------------
+
+# DO NOT RUN LINES 205-208 FOR MAP 3
 x.range <- as.integer(c((min(LocationCoord_UTM_SV$x))-5,
                         (max(LocationCoord_UTM_SV$x))+5))
 y.range <- as.integer(c((min(LocationCoord_UTM_SV$y))-5,
@@ -211,7 +225,7 @@ colnames(idwSV)[3]<-c("idwSV_mday")
 
 # plot the idw results to show seepage velocity distribution
 contourplot(idwSV_mday~y+x,idwSV,
-            main = paste("Site 1 - Using K from temperature profile"),
+            main = paste("Site 1 - SBPVP"),
             cuts=10,                  #factors defining panes
             region=T, 
             #aspect="iso",
@@ -229,11 +243,12 @@ contourplot(idwSV_mday~y+x,idwSV,
                                 col="darkgreen"))
 
 
+
 #----------
 # Export idvSV to .csv file (I need this to make a larger figure)
 
 write.csv(idwSV,
-          "C:/Users/hszyd/Documents/KU Research/UW_Work/Alder_Creek/503FinalProject\\Site1_MP_KfromTemp_idwTable.csv" )
+          "C:/Users/hszyd/Documents/KU Research/UW_Work/Alder_Creek/503FinalProject\\Site1_SBPVP_idwTable.csv" )
 
 
 
