@@ -1,0 +1,8 @@
+SBPVP,Vertical_mday,Horiz_mday
+W01 A,-8,
+W01 B,7,
+W01 C,2,
+W06 A,14,
+W06 B,25,
+W06 C,26,
+W06 D,0,
