@@ -31,7 +31,7 @@ setwd("C:/Users/hszyd/Documents/KU Research/UW_Work/Alder_Creek/503FinalProject"
 #  Determine which files to use based on the comment to the right
 
 SVData <- read.csv(file = "MiniPiezData_Site2.csv")               # map 4 & 5
-#KvaluesUW <- read.csv(file = "MiniPiez_KvaluesUW_Site2.csv")      # map 5
+KvaluesUW <- read.csv(file = "MiniPiez_KvaluesUW_Site2.csv")      # map 5
 #SVData <- read.csv(file = "SBPVP_SVmday_Site2.csv")               # map 6
 #colnames(SVData)[2] <- c("AVG_SV_mday")                           # map 6
 LocationCoord <- read.csv(file = "Jeff_Site2_MiniPiez_Coord.csv") # map 4 & 5
@@ -63,8 +63,8 @@ library(latticeExtra)
 #  Note: Step 1 only needs to be done for maps 4 and 5
 
 # define hydraulic conductivity (K) and porosity (n)
-K <- 3.5e-2  # cm/sec from literature
-#K <- KvaluesUW$K_cmsec # cm/sec from UW temperature data
+#K <- 3.5e-2  # cm/sec from literature
+K <- KvaluesUW$K_cmsec # cm/sec from UW temperature data
 n <- 0.3
 
 # Convert na characters to NA numeric
